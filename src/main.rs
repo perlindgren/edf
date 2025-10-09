@@ -1,44 +1,65 @@
-use std::usize;
+#[derive(Debug)]
+struct Task {
+    _id: &'static str,
+    abs_dl: i8,
+}
 
-fn min(dl: &[i8], now: i8) -> (i8, usize) {
-    let mut min = i8::MAX;
+#[derive(Debug, Default)]
+struct Edf {
+    now: i8,
+    tasks: Vec<Task>,
+}
 
-    let mut best_index = usize::MAX;
-    for (i, d) in dl.iter().enumerate() {
-        let rd = (*d).wrapping_sub(now);
-        if rd < min {
-            min = rd;
-            best_index = i;
-        }
+impl Edf {
+    fn pend(&mut self, rel_dl: i8, id: &'static str) {
+        self.tasks.push(Task {
+            _id: id,
+            abs_dl: rel_dl.wrapping_add(self.now),
+        })
     }
 
-    println!("now {} min {} index {}", now, min, best_index);
+    fn schedule(&mut self, tick: i8) {
+        let mut min = None;
+        self.now = self.now.wrapping_add(tick);
 
-    (min, best_index)
+        let mut best_index = None;
+        for (i, task) in self.tasks.iter().enumerate() {
+            let rd = task.abs_dl.wrapping_sub(self.now);
+            if let Some(m) = min {
+                if rd < m {
+                    min = Some(rd);
+                    best_index = Some(i);
+                }
+            } else {
+                min = Some(rd);
+                best_index = Some(i);
+            }
+        }
+
+        if let Some(i) = best_index {
+            println!(
+                "now {} min {:?} task {:?},",
+                self.now,
+                min,
+                self.tasks.get(i)
+            );
+            self.tasks.remove(i);
+        } else {
+            println!("none");
+        }
+    }
 }
 
 fn main() {
-    let t = [10, 100, 127];
-    let m = min(&t, 0);
+    let mut edf = Edf::default();
 
-    min(&t, 0);
-    min(&t, 10);
-    min(&t, 11);
-    min(&t, 100);
-    min(&t, 101);
-}
-
-fn min_copy(dl: &[u8], now: u8) -> (u8, usize) {
-    let mut min = u8::MAX as u16 + 1;
-
-    let mut best_index = usize::MAX;
-    for (i, d) in dl.iter().enumerate() {
-        let rd = (*d as u16).wrapping_sub(now as u16);
-        if rd < min {
-            min = rd;
-            best_index = i;
-        }
+    for _ in 0..20 {
+        edf.pend(10, "t1");
+        edf.pend(127, "t2");
+        edf.schedule(20);
+        edf.pend(110, "t3");
+        edf.schedule(0);
+        edf.schedule(50);
+        edf.schedule(0);
     }
-
-    (min as u8, best_index)
 }
