@@ -30,7 +30,7 @@ The `schedule` method, increments the monotonic timer (`now`) under wrapping ari
 
 ## Proof of concept
 
-As a simple test, the `main` function, iterate a process of scheduling three tasks, "t1", "t2", "t3", to be executed in order, while ensuring to stress wrapping edge cases.
+As a simple test, the `main` function, iterates a process of scheduling three tasks, "t1", "t2", "t3", to be executed in order. The relative deadlines are out of order and designed to stress wrapping edge cases.
 
 The takeaway here is to provide a (golden) reference for hardware implementation counterparts.
 
@@ -44,4 +44,4 @@ A efficient hardware implementation can be obtained by leveraging an arbitration
 
 ![a][def]
 
-[def]: ./edf_pre.pdf
+[def]: ./edf_pre.drawio.svg
