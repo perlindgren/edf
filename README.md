@@ -37,3 +37,11 @@ The takeaway here is to provide a (golden) reference for hardware implementation
 ## Disclaimer
 
 Rust is unfortunately not (yet) capable of native arbitrary precision integers, so we chose `i8` for the purpose of demonstration.
+
+## Hardware implementation
+
+A efficient hardware implementation can be obtained by leveraging an arbitration tree approach with logarithmic (log2) depth, preceded by a single pre-processing layer.
+
+![a][def]
+
+[def]: ./edf_pre.pdf
