@@ -54,12 +54,13 @@ fn main() {
     let mut edf = Edf::default();
 
     for _ in 0..20 {
-        edf.pend(10, "t1");
-        edf.pend(127, "t2");
-        edf.schedule(20);
-        edf.pend(110, "t3");
+        edf.pend(10, "t1"); // abs_dl = now + 10
+        edf.pend(127, "t2"); // (a) abs_dl = now + 127 (maximum positive)
+        edf.schedule(20); // will schedule "t1", increments now by 20
+        edf.pend(110, "t3"); // abs_dl = now + 110,
+        // (now + 137 in relation to (a), so later than "t2"
         edf.schedule(0);
         edf.schedule(50);
-        edf.schedule(0);
+        edf.schedule(0); // nothing to schedule
     }
 }
