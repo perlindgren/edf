@@ -1,0 +1,49 @@
+module Arbitration #() (
+    i_abs_dl: input signed logic<8> [8], // 8 vectors
+    i_pend  : input logic           [8],
+    // o_index : output logic       <3>    ,
+    o_pend: output logic,
+) {
+    assign o_pend = 0;
+    // we can probably also do it this way generically,
+    // n + n / 2 + n / 4 + ... + 1 = 2n-1
+    // so let intermediate: logic<width> [2n-1];
+    // // think about it.
+    // let id_1: logic<3> = if Polarity == true ? (if values_i[0] >= values_i[1] ? 0 : 1) : (if values_i[0] <= values_i[1] ? 0 : 1);
+    // let id_2: logic<3> = if Polarity == true ? (if values_i[2] >= values_i[3] ? 2 : 3) : (if values_i[2] <= values_i[3] ? 2 : 3);
+    // let id_3: logic<3> = if Polarity == true ? (if values_i[4] >= values_i[5] ? 4 : 5) : (if values_i[4] <= values_i[5] ? 4 : 5);
+    // let id_4: logic<3> = if Polarity == true ? (if values_i[6] >= values_i[7] ? 6 : 7) : (if values_i[6] <= values_i[7] ? 6 : 7);
+
+    // let id_12: logic<3> = if Polarity == true ?
+    //     (if values_i[id_1] >= values_i[id_2] ? id_1 : id_2)
+    // :
+    //     (if values_i[id_1] <= values_i[id_2] ? id_1 : id_2)
+    // ;
+    // let id_34: logic<3> = if Polarity == true ?
+    //     (if values_i[id_3] >= values_i[id_4] ? id_3 : id_4)
+    // :
+    //     (if values_i[id_3] <= values_i[id_4] ? id_3 : id_4)
+    // ;
+
+    // let id_1234: logic<3> = if Polarity == true ?
+    //     (if values_i[id_12] >= values_i[id_34] ? id_12 : id_34)
+    // :
+    //     (if values_i[id_12] <= values_i[id_34] ? id_12 : id_34)
+    // ;
+
+    // assign index_o = id_1234;
+    // assign prio_o  = values_i[id_1234];
+
+    // embed (inline) sv{{{
+    //     always_comb begin
+    //         foreach (values_i[i]) begin
+    //             // output prio is always larger or equal to any
+    //             // input value
+    //             assert((prio_o >= values_i[i]) == Polarity);
+    //         end
+    //         // output index always points to some max/min
+    //         assert(values_i[index_o] == prio_o);
+
+    //     end
+    // }}}
+}
