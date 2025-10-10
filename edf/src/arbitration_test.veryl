@@ -2,14 +2,15 @@
 embed (inline) sv{{{
 
     module test;
-        logic[7:0] i_abs_dl[8]; 
-        logic i_pend[8];
+        import edf_Types::*;
+        // Entry i_int_vec[8]; 
+        IntVec i_int_vec; 
         logic o_pend;
+
         int now;
 
         edf_Arbitration dut (
-            .i_abs_dl,
-            .i_pend,
+            .i_int_vec,
             .o_pend
         );
 
@@ -18,26 +19,24 @@ embed (inline) sv{{{
 		    now = now + x;
 	    endtask
 
-        function void pend(logic [2:0] i, inout logic i_p[8]);
+        function void pend(logic [2:0] i, logic signed [8-1:0] dl);
             $display("i ", i);
-            i_p[i] = 1;
-            
-            $display("i_pend ", i_p[0]);
-            $display("i_pend ", i_p[1]);
-            $display("i_pend ", i_p[2]);
-            $display("i_pend ", i_p[3]);
-            $display("i_pend ", i_p[4]);
+            i_int_vec[i].abs_dl = now[7:0] + dl;
+            i_int_vec[i].pend = 1;
+
+            $display("abs_dl ", i_int_vec[i].abs_dl);
+            $display("pend ", i_int_vec[i].pend);
         endfunction
 
         initial begin
-            i_pend = '{default: 0}; 
+           //  i_pend = '{default: 0}; 
             now = 0;
             
             tick(10);
-            pend(0, i_pend);
+            pend(0, 10);
             
             tick(20);
-            pend(1, i_pend);
+            pend(1, 20);
 
             tick(10);
         end

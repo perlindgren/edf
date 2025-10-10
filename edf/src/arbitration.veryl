@@ -1,6 +1,16 @@
+package Types {
+    struct Entry {
+        abs_dl: signed logic<8>,
+        pend  : logic          ,
+    }
+
+    const IntVec: type = Entry[7:0];
+}
+
 module Arbitration #() (
-    i_abs_dl: input signed logic<8> [8], // 8 vectors
-    i_pend  : input logic           [8],
+    // i_int_vec: input Types::Entry [8],
+    i_int_vec: input Types::IntVec,
+    
     // o_index : output logic       <3>    ,
     o_pend: output logic,
 ) {
