@@ -1,0 +1,43 @@
+import Types::*;
+
+module ArbTree #() (
+    i_rel_dl: input RelDeadLines,
+    // the shortest deadline
+    o_item: output TreeItem,
+) {
+
+    function min_max (
+        arr        : input RelDeadLines,
+        range_start: input IntVecIdx   ,
+        range_end  : input IntVecIdx   ,
+    ) -> Types::TreeItem {
+        if (range_end - range_start) >= 2 {
+            let middle: IntVecIdx = range_start + ((range_end - range_start) >> 1);
+            let left  : TreeItem  = min_max(arr, range_start, middle);
+            let right : TreeItem  = min_max(arr, middle + 1, range_end);
+            if (left.value <: right.value) {
+                return left;
+            } else {
+                return right;
+            }
+        } else if ((range_end - range_start) == 1) {
+            if ((arr[range_start]) <: arr[range_end]) {
+                var item      : TreeItem;
+                item.value = arr[range_start];
+                item.idx   = range_start;
+                return item;
+            } else {
+                var item      : TreeItem;
+                item.value = arr[range_end];
+                item.idx   = range_end;
+                return item;
+            }
+        } else {
+            var item      : TreeItem;
+            item.value = arr[range_start];
+            item.idx   = range_start;
+            return item;
+        }
+    }
+    assign o_item = min_max(i_rel_dl, 0, (NrVec - 1) as IntVecIdx);
+}

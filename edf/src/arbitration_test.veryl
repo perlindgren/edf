@@ -3,15 +3,17 @@ embed (inline) sv{{{
 
     module test;
         import edf_Types::*;
-        // Entry i_int_vec[8]; 
+
         IntVec i_int_vec; 
-        logic o_pend;
+        DeadLine i_now;
+        TreeItem o_item;
 
         int now;
 
         edf_Arbitration dut (
             .i_int_vec,
-            .o_pend
+            .i_now(now[7:0]),
+            .o_item
         );
 
         task tick (int x);
@@ -23,6 +25,7 @@ embed (inline) sv{{{
             $display("i ", i);
             i_int_vec[i].abs_dl = now[7:0] + dl;
             i_int_vec[i].pend = 1;
+            i_int_vec[i].enable = 1;
 
             $display("abs_dl ", i_int_vec[i].abs_dl);
             $display("pend ", i_int_vec[i].pend);
@@ -34,8 +37,10 @@ embed (inline) sv{{{
             
             tick(10);
             pend(0, 10);
+
+            tick(10);
             
-            tick(20);
+            tick(10);
             pend(1, 20);
 
             tick(10);

@@ -1,0 +1,22 @@
+package Types {
+    const NrVec       : u32  = 8;
+    const DeadLineBits: u32  = 8;
+    const DeadLine    : type = signed logic<DeadLineBits>;
+
+    struct Entry {
+        abs_dl: DeadLine,
+        pend  : logic   ,
+        enable: logic   ,
+    }
+
+    const IntVec        : type = Entry[NrVec - 1:0];
+    const IntVecIdxWidth: u32  = $clog2(NrVec);
+    const IntVecIdx     : type = logic<IntVecIdxWidth>;
+
+    const RelDeadLines: type = DeadLine[NrVec - 1:0];
+
+    struct TreeItem {
+        value: DeadLine ,
+        idx  : IntVecIdx,
+    }
+}

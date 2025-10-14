@@ -4,5 +4,6 @@
         "endmodule",
         "endtask",
         "inout"
-    ]
+    ],
+    "editor.formatOnSave": true
 }
