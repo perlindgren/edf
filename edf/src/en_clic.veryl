@@ -1,0 +1,29 @@
+import Types::*;
+
+module EdfNestedClic #() (
+    i_clk     : input clock    ,
+    i_nrst    : input reset    ,
+    i_now     : input DeadLine ,
+    i_pend    : input logic    ,
+    i_pend_idx: input IntVecIdx,
+    // o_dispatch    : output logic    ,
+    // o_dispatch_idx: output IntVecIdx,
+) {
+
+    var iv: IntVec;
+
+    always_ff (i_clk, i_nrst) {
+        if_reset {
+            for i: u32 in 0..NrVec {
+                iv[i].pend   = 0; // clear pending/enable bits
+                iv[i].enable = 0;
+            }
+        } else {
+            if i_pend {
+                iv[i_pend_idx].pend = 1;
+
+            }
+        }
+    }
+
+}

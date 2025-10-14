@@ -1,0 +1,64 @@
+#[test(en_clic)]
+embed (inline) sv{{{
+
+    module test;
+        import edf_Types::*;
+
+        logic i_clk; 
+        logic i_nrst;
+        DeadLine i_now;
+        logic i_pend;
+        IntVecIdx i_pend_idx;
+
+        int now;
+
+        edf_EdfNestedClic dut (
+            .i_clk,
+            .i_nrst,
+            .i_now,
+            .i_pend,
+            .i_pend_idx
+        );
+
+        task tick (int x);
+            # x;
+            i_clk = 0;
+            # x;
+		    now = now + x + x;
+            i_clk = 1;
+	    endtask
+
+        function void pend(IntVecIdx i, DeadLine dl);
+            $display("i ", i);
+            i_pend_idx = i;
+            dut.iv[i].rel_dl = dl;
+            i_pend = 1;
+
+            // $display("abs_dl ", i_int_vec[i].abs_dl);
+            // $display("pend ", i_int_vec[i].pend);
+        endfunction
+
+        initial begin
+           
+            now = 0;
+            i_nrst = 1; // no reset
+            
+            tick(5);
+            pend(0, 10);
+            dut.iv[0].enable = 1; // enable interrupt
+
+            tick(5);
+
+            i_nrst = 0; // reset
+            
+            tick(5);
+
+            i_nrst = 1;
+
+            tick(5);
+          //  pend(1, 20);
+
+            tick(5);
+        end
+    endmodule
+}}}

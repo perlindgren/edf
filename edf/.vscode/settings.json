@@ -1,8 +1,11 @@
 {
     "cSpell.ignoreWords": [
+        "0",
+        "clic",
         "endfunction",
         "endmodule",
         "endtask",
+        "i_nrst",
         "inout"
     ],
     "editor.formatOnSave": true

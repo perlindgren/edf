@@ -4,6 +4,7 @@ package Types {
     const DeadLine    : type = signed logic<DeadLineBits>;
 
     struct Entry {
+        rel_dl: DeadLine,
         abs_dl: DeadLine,
         pend  : logic   ,
         enable: logic   ,
