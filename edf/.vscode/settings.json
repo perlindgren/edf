@@ -1,12 +1,14 @@
 {
     "cSpell.ignoreWords": [
         "0",
+        "Veryl",
         "clic",
         "endfunction",
         "endmodule",
         "endtask",
         "i_nrst",
-        "inout"
+        "inout",
+        "verilog"
     ],
     "editor.formatOnSave": true
 }

@@ -7,8 +7,12 @@ embed (inline) sv{{{
         logic i_clk; 
         logic i_nrst;
         DeadLine i_now;
-        logic i_pend;
+        PendVec i_pend;
         IntVecIdx i_pend_idx;
+        logic i_ret;
+        IntVecIdx i_ret_idx;
+        logic o_dispatch;
+        IntVecIdx o_dispatch_idx;
 
         int now;
 
@@ -17,48 +21,83 @@ embed (inline) sv{{{
             .i_nrst,
             .i_now,
             .i_pend,
-            .i_pend_idx
+            .i_pend_idx,
+            .i_ret,
+            .i_ret_idx,
+            .o_dispatch,
+            .o_dispatch_idx
         );
 
         task tick (int x);
-            # x;
-            i_clk = 0;
-            # x;
-		    now = now + x + x;
-            i_clk = 1;
+            for (int i = 0; i < x; i++) begin
+                i_clk = 1;
+                # 5;
+                i_clk = 0;
+                # 5;
+                now = now + 1;
+                i_now = now[7:0];
+                // we clear pend and i_ret by default
+                i_pend = 0;
+                i_ret = 0;
+            end
+
 	    endtask
 
-        function void pend(IntVecIdx i, DeadLine dl);
-            $display("i ", i);
-            i_pend_idx = i;
-            dut.iv[i].rel_dl = dl;
-            i_pend = 1;
+        function void ret(IntVecIdx i);
+            i_ret = 1;
+            i_ret_idx = i;
+	    endfunction
 
-            // $display("abs_dl ", i_int_vec[i].abs_dl);
-            // $display("pend ", i_int_vec[i].pend);
-        endfunction
+        function void pend(IntVecIdx i);
+            i_pend |= 1 << i;
+	    endfunction
 
+ 
         initial begin
            
             now = 0;
             i_nrst = 1; // no reset
-            
-            tick(5);
-            pend(0, 10);
+
+            tick(1);
             dut.iv[0].enable = 1; // enable interrupt
+            dut.iv[1].enable = 1; // enable interrupt
+            dut.iv[2].enable = 1; // enable interrupt
+            dut.iv[0].rel_dl = 10;
+            dut.iv[1].rel_dl = 50;
+            dut.iv[2].rel_dl = 100;
 
-            tick(5);
-
-            i_nrst = 0; // reset
+            i_ret = 0;
+            pend(0);
+            pend(1);
+            pend(2); // task 1 starts
             
             tick(5);
+            ret(0); // task 0 done, task 1 to execute
+            
+            tick(10);
+            ret(1); // task 1 done, task 2 starts to execute
 
-            i_nrst = 1;
+            tick(20);
+
+            pend(1); // task 1 to execute, preempts 2
 
             tick(5);
-          //  pend(1, 20);
+
+            pend(0); // task 0 to execute, preempts 1
 
             tick(5);
+
+            ret(0); // task 0 done, task 1 cont.
+
+            tick(10);
+            ret(1); // task 1 done, task 2 cont.
+
+            tick(20);
+
+            ret(2);            
+
+            tick(10);
+
         end
     endmodule
 }}}

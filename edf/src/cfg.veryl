@@ -2,12 +2,15 @@ package Types {
     const NrVec       : u32  = 8;
     const DeadLineBits: u32  = 8;
     const DeadLine    : type = signed logic<DeadLineBits>;
+    const PendVec     : type = logic<NrVec>;
 
     struct Entry {
-        rel_dl: DeadLine,
-        abs_dl: DeadLine,
-        pend  : logic   ,
-        enable: logic   ,
+        addr   : u32     ,
+        rel_dl : DeadLine,
+        abs_dl : DeadLine,
+        pend   : logic   ,
+        enable : logic   ,
+        running: logic   ,
     }
 
     const IntVec        : type = Entry[NrVec - 1:0];
@@ -20,4 +23,6 @@ package Types {
         value: DeadLine ,
         idx  : IntVecIdx,
     }
+
+    const MAX_DEADLINE: DeadLine = {1'0 repeat 1, 1'1 repeat DeadLineBits - 1};
 }
