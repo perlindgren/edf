@@ -35,33 +35,24 @@ module EdfNestedClic #() (
         arr        : input RelDeadLines,
         range_start: input IntVecIdx   ,
         range_end  : input IntVecIdx   ,
-    ) -> TreeItem {
+    ) -> IntVecIdx {
         if (range_end - range_start) >= 2 {
             let middle: IntVecIdx = range_start + ((range_end - range_start) >> 1);
-            let left  : TreeItem  = min(arr, range_start, middle);
-            let right : TreeItem  = min(arr, middle + 1, range_end);
-            if (left.value <: right.value) {
+            let left  : IntVecIdx  = min(arr, range_start, middle);
+            let right : IntVecIdx  = min(arr, middle + 1, range_end);
+            if (arr[left] <: arr[right]) {
                 return left;
             } else {
                 return right;
             }
         } else if ((range_end - range_start) == 1) {
             if ((arr[range_start]) <: arr[range_end]) {
-                var item      : TreeItem;
-                item.value = arr[range_start];
-                item.idx   = range_start;
-                return item;
+                return range_start;
             } else {
-                var item      : TreeItem;
-                item.value = arr[range_end];
-                item.idx   = range_end;
-                return item;
+                return range_end;
             }
         } else {
-            var item      : TreeItem;
-            item.value = arr[range_start];
-            item.idx   = range_start;
-            return item;
+            return range_start;
         }
     }
 
@@ -89,17 +80,17 @@ module EdfNestedClic #() (
 
             let rel_dl: RelDeadLines = normalize(iv, i_now);
 
-            let min_ti: TreeItem = min(rel_dl, 0, (NrVec - 1) as IntVecIdx);
+            let min_idx: IntVecIdx = min(rel_dl, 0, (NrVec - 1) as IntVecIdx);
 
             // we check that it is not infinite in the future, and not already running
-            if min_ti.value != MAX_DEADLINE & !iv[min_ti.idx].running {
-                iv[min_ti.idx].pend    = 0;
-                iv[min_ti.idx].running = 1;
+            if rel_dl[min_idx] != MAX_DEADLINE & !iv[min_idx].running {
+                iv[min_idx].pend    = 0;
+                iv[min_idx].running = 1;
                 o_dispatch             = 1;
             } else {
                 o_dispatch = 0;
             }
-            o_dispatch_idx = min_ti.idx;
+            o_dispatch_idx = min_idx;
         }
     }
 }
