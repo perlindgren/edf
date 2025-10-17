@@ -1,4 +1,4 @@
-import Types::*;
+import Cfg::*;
 
 module EdfNestedClic #() (
     i_clk         : input  clock    ,
@@ -11,7 +11,10 @@ module EdfNestedClic #() (
     o_dispatch    : output logic    ,
     o_dispatch_idx: output IntVecIdx,
 ) {
-    var iv: IntVec; // iv will be assigned on reset
+    var iv       : IntVec           ; // interrupt vector store
+    var int_level: IntVecIdx        ; // number of stacked
+    var int_stack: IntVecIdx [NrVec];
+    var idle     : logic            ; // true indicates no interrupts running
 
     function normalize (
         int_vec: input IntVec  ,
@@ -20,7 +23,7 @@ module EdfNestedClic #() (
         var rel_dl: RelDeadLines;
 
         for i: u32 in 0..NrVec {
-            if (int_vec[i].pend & int_vec[i].enable) | int_vec[i].running {
+            if (int_vec[i].pend & int_vec[i].enable) | (int_stack[int_level] == i as IntVecIdx & !idle) {
                 // either pended and enabled OR already running
                 rel_dl[i] = int_vec[i].abs_dl - now;
             } else {
@@ -70,14 +73,19 @@ module EdfNestedClic #() (
             for i: u32 in 0..NrVec {
                 iv[i].pend     = 0; // clear interrupt vector pending/enable bits
                 iv[i].enable   = 0;
-                iv[i].running  = 0;
                 o_dispatch     = 0; // clear dispatch outputs
                 o_dispatch_idx = 0;
+                int_level      = 0;
+                idle           = 1; // initially idle
             }
         } else {
             // clear running status of returned task
             if i_ret {
-                iv[i_ret_idx].running = 0;
+                if int_level == 0 {
+                    idle = 1;
+                } else {
+                    int_level -= 1;
+                }
             }
 
             for i: u32 in 0..NrVec {
@@ -92,10 +100,17 @@ module EdfNestedClic #() (
             let min_ti: TreeItem = min(rel_dl, 0, (NrVec - 1) as IntVecIdx);
 
             // we check that it is not infinite in the future, and not already running
-            if min_ti.value != MAX_DEADLINE & !iv[min_ti.idx].running {
-                iv[min_ti.idx].pend    = 0;
-                iv[min_ti.idx].running = 1;
-                o_dispatch             = 1;
+            if min_ti.value != MAX_DEADLINE & ((int_stack[int_level] != min_ti.idx) | idle) {
+                iv[min_ti.idx].pend = 0;
+                o_dispatch          = 1;
+                if idle {
+                    int_level    = 0;
+                    idle         = 0;
+                    int_stack[0] = min_ti.idx;
+                } else {
+                    int_level                += 1;
+                    int_stack[int_level + 1] =  min_ti.idx;
+                }
             } else {
                 o_dispatch = 0;
             }

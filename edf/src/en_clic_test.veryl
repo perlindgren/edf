@@ -2,7 +2,7 @@
 embed (inline) sv{{{
 
     module test;
-        import edf_Types::*;
+        import edf_Cfg::*;
 
         logic i_clk; 
         logic i_nrst;
@@ -30,9 +30,9 @@ embed (inline) sv{{{
 
         task tick (int x);
             for (int i = 0; i < x; i++) begin
-                i_clk = 1;
-                # 5;
                 i_clk = 0;
+                # 5;
+                i_clk = 1;
                 # 5;
                 now = now + 1;
                 i_now = now[7:0];
@@ -56,9 +56,11 @@ embed (inline) sv{{{
         initial begin
            
             now = 0;
-            i_nrst = 1; // no reset
+            i_nrst = 0; // reset
 
             tick(1);
+            i_nrst = 1; // after reset
+
             dut.iv[0].enable = 1; // enable interrupt
             dut.iv[1].enable = 1; // enable interrupt
             dut.iv[2].enable = 1; // enable interrupt
@@ -67,6 +69,7 @@ embed (inline) sv{{{
             dut.iv[2].rel_dl = 100;
 
             i_ret = 0;
+
             pend(0);
             pend(1);
             pend(2); // task 1 starts

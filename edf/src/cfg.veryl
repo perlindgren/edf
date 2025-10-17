@@ -1,16 +1,15 @@
-package Types {
+package Cfg {
     const NrVec       : u32  = 8;
     const DeadLineBits: u32  = 8;
     const DeadLine    : type = signed logic<DeadLineBits>;
     const PendVec     : type = logic<NrVec>;
 
     struct Entry {
-        addr   : u32     ,
-        rel_dl : DeadLine,
-        abs_dl : DeadLine,
-        pend   : logic   ,
-        enable : logic   ,
-        running: logic   ,
+        addr  : u32     ,
+        rel_dl: DeadLine,
+        abs_dl: DeadLine,
+        pend  : logic   ,
+        enable: logic   ,
     }
 
     const IntVec        : type = Entry[NrVec - 1:0];
