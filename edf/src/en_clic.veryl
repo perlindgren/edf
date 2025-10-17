@@ -7,7 +7,6 @@ module EdfNestedClic #() (
     i_pend        : input  PendVec  ,
     i_pend_idx    : input  IntVecIdx,
     i_ret         : input  logic    ,
-    i_ret_idx     : input  IntVecIdx,
     o_dispatch    : output logic    ,
     o_dispatch_idx: output IntVecIdx,
 ) {
@@ -77,17 +76,25 @@ module EdfNestedClic #() (
                 o_dispatch_idx = 0;
                 int_level      = 0;
                 idle           = 1; // initially idle
+                int_stack[i]   = (NrVec - 1) as IntVecIdx;
             }
         } else {
             // clear running status of returned task
+            var next_idle     : logic    ;
+            var next_int_level: IntVecIdx;
+
+            next_idle      = idle;
+            next_int_level = int_level;
+
             if i_ret {
                 if int_level == 0 {
-                    idle = 1;
+                    next_idle = 1;
                 } else {
-                    int_level -= 1;
+                    next_int_level -= 1;
                 }
             }
 
+            // notice one cycle latency on (external) pend
             for i: u32 in 0..NrVec {
                 if i_pend[i] & !iv[i].pend {
                     iv[i].pend   = 1;
@@ -100,20 +107,23 @@ module EdfNestedClic #() (
             let min_ti: TreeItem = min(rel_dl, 0, (NrVec - 1) as IntVecIdx);
 
             // we check that it is not infinite in the future, and not already running
-            if min_ti.value != MAX_DEADLINE & ((int_stack[int_level] != min_ti.idx) | idle) {
+            if min_ti.value != MAX_DEADLINE & ((int_stack[next_int_level] != min_ti.idx) | next_idle) {
                 iv[min_ti.idx].pend = 0;
                 o_dispatch          = 1;
-                if idle {
-                    int_level    = 0;
-                    idle         = 0;
-                    int_stack[0] = min_ti.idx;
+                if next_idle {
+                    next_int_level = 0;
+                    next_idle      = 0;
+                    int_stack[0]   = min_ti.idx;
                 } else {
-                    int_level                += 1;
-                    int_stack[int_level + 1] =  min_ti.idx;
+                    $display                 ("--- here ---");
+                    next_int_level            += 1;
+                    int_stack[next_int_level] =  min_ti.idx;
                 }
             } else {
                 o_dispatch = 0;
             }
+            idle           = next_idle;
+            int_level      = next_int_level;
             o_dispatch_idx = min_ti.idx;
         }
     }

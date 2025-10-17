@@ -10,9 +10,11 @@ embed (inline) sv{{{
         PendVec i_pend;
         IntVecIdx i_pend_idx;
         logic i_ret;
-        IntVecIdx i_ret_idx;
+        
         logic o_dispatch;
         IntVecIdx o_dispatch_idx;
+
+        DeadLine tasks[NrVec];
 
         int now;
 
@@ -23,7 +25,6 @@ embed (inline) sv{{{
             .i_pend,
             .i_pend_idx,
             .i_ret,
-            .i_ret_idx,
             .o_dispatch,
             .o_dispatch_idx
         );
@@ -39,17 +40,22 @@ embed (inline) sv{{{
                 // we clear pend and i_ret by default
                 i_pend = 0;
                 i_ret = 0;
+
+                // count down executing task
+                if (!dut.idle) begin
+                    tasks[o_dispatch_idx]--;
+                    if (tasks[o_dispatch_idx] == 0) begin
+                        i_ret = 1;
+                    end 
+                end
+                
             end
 
 	    endtask
 
-        function void ret(IntVecIdx i);
-            i_ret = 1;
-            i_ret_idx = i;
-	    endfunction
-
-        function void pend(IntVecIdx i);
+        function void pend(IntVecIdx i, DeadLine dl);
             i_pend |= 1 << i;
+            tasks[i] = dl;
 	    endfunction
 
  
@@ -70,36 +76,40 @@ embed (inline) sv{{{
 
             i_ret = 0;
 
-            pend(0);
-            pend(1);
-            pend(2); // task 1 starts
+            pend(0, 5);
+            pend(1, 20);
+            pend(2, 50); // task 0 starts
             
-            tick(5);
-            ret(0); // task 0 done, task 1 to execute
+            tick(15);
+            pend(0, 5);
             
-            tick(10);
-            ret(1); // task 1 done, task 2 starts to execute
 
-            tick(20);
+            tick(100);
+            // ret(0); // task 0 done, task 1 to execute
+            
+            // tick(10);
+            // ret(1); // task 1 done, task 2 starts to execute
 
-            pend(1); // task 1 to execute, preempts 2
+            // tick(20);
 
-            tick(5);
+            // pend(1); // task 1 to execute, preempts 2
 
-            pend(0); // task 0 to execute, preempts 1
+            // tick(5);
 
-            tick(5);
+            // pend(0); // task 0 to execute, preempts 1
 
-            ret(0); // task 0 done, task 1 cont.
+            // tick(5);
 
-            tick(10);
-            ret(1); // task 1 done, task 2 cont.
+            // ret(0); // task 0 done, task 1 cont.
 
-            tick(20);
+            // tick(10);
+            // ret(1); // task 1 done, task 2 cont.
 
-            ret(2);            
+            // tick(20);
 
-            tick(10);
+            // ret(2);            
+
+            // tick(10);
 
         end
     endmodule
