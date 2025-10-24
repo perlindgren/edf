@@ -1,0 +1,10 @@
+name = "lean_edf"
+version = "0.1.0"
+defaultTargets = ["lean_edf"]
+
+[[lean_lib]]
+name = "LeanEdf"
+
+[[lean_exe]]
+name = "lean_edf"
+root = "Main"
