@@ -1,0 +1,75 @@
+module Edf
+
+use int.Int
+
+use int.Int
+  use option.Option
+  use list.List
+  use list.Elements
+  use list.Map
+  
+  use list.FoldLeft
+  
+  type job = {
+     rel_dl : int;
+     abs_dl : int;
+  }
+  
+  
+  predicate j_rel (j1:job) (j2: job) = j1.rel_dl < j2.rel_dl
+   
+  clone relations.Transitive with
+    type t = job, predicate rel = j_rel, axiom Trans
+   
+  clone list.Sorted as RelSorted with type t = job, predicate le = j_rel, goal .
+  
+
+  predicate j_abs (j1:job) (j2: job) = j1.abs_dl > j2.abs_dl
+   
+  clone relations.Transitive as AbsTrans with
+    type t = job, predicate rel = j_abs, axiom Trans
+   
+  clone list.Sorted as AbsSorted with type t = job, predicate le = j_abs, goal .
+  
+  type system = { 
+    mutable now: int; 
+    pend: list job;
+    stack: list job; 
+  } 
+  invariant { 
+    RelSorted.sorted stack /\ AbsSorted.sorted stack
+  } 
+  by {
+    now = 0;
+    pend = Nil;
+    stack = Nil;
+  }
+  
+  let tick (s: system) 
+    writes { s }
+  =
+    s.now <- s.now + 1;
+    
+  
+  
+  
+  (*
+  let function to_abs (jobs: list job) (now: int) : list int =
+    match jobs with
+    | Nil -> Nil
+    | Cons j jl -> { rel_dl = j.rel_dl;
+     
+    
+  let function stack (s: system) (pend : list job) : system 
+  =   
+    let pend_abs = to_abs pend s.now in 
+    
+    {
+      now = s.now + 1;
+      jobs = s.jobs;
+    }
+    
+    *)
+    
+end
+
